@@ -1,0 +1,97 @@
+{
+  "courses": [
+    {
+      "name": "课程名称1",
+      "teacher": "老师",
+      "assistant": "助教",
+      "location": "地点",
+      "day": "周一",
+      "day_index": 1,
+      "section": "1",
+      "time_range": "08:00-08:45",
+      "section_index": 1
+    },
+    {
+      "name": "课程名称2",
+      "teacher": "老师",
+      "assistant": "助教",
+      "location": "地点",
+      "day": "周二",
+      "day_index": 2,
+      "section": "2",
+      "time_range": "08:00-08:45",
+      "section_index": 2
+    }
+  ],
+  "week_days": [
+    "周一",
+    "周二",
+    "周三",
+    "周四",
+    "周五",
+    "周六",
+    "周日"
+  ],
+  "section_times": [
+    {
+      "section": "1",
+      "time_range": "08:00-08:45"
+    },
+    {
+      "section": "2",
+      "time_range": "08:50-09:35"
+    },
+    {
+      "section": "3",
+      "time_range": "09:50-10:35"
+    },
+    {
+      "section": "4",
+      "time_range": "10:40-11:25"
+    },
+    {
+      "section": "5",
+      "time_range": "11:30-12:15"
+    },
+    {
+      "section": "6",
+      "time_range": "14:00-14:45"
+    },
+    {
+      "section": "7",
+      "time_range": "14:50-15:35"
+    },
+    {
+      "section": "8",
+      "time_range": "15:50-16:35"
+    },
+    {
+      "section": "9",
+      "time_range": "16:40-17:25"
+    },
+    {
+      "section": "10",
+      "time_range": "17:30-18:15"
+    },
+    {
+      "section": "11",
+      "time_range": "19:00-19:45"
+    },
+    {
+      "section": "12",
+      "time_range": "19:50-20:35"
+    },
+    {
+      "section": "13",
+      "time_range": "20:40-21:25"
+    },
+    {
+      "section": "14",
+      "time_range": "21:30-22:15"
+    }
+  ],
+  "total_courses": 1,
+  "timestamp": "2077-07-21 11:45:14",
+  "student_id": "学号",
+  "university": "自己学校"
+}
