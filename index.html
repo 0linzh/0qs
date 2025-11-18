@@ -4494,7 +4494,127 @@
             <!-- 添加主题适配div -->
             <div class="theme-container">
                 <h2>数学公式编辑器</h2>
+                <button id="math-help-btn" class="help-button">使用说明</button>
             </div>
+            
+            <!-- 数学编辑器使用说明弹窗 -->
+            <div id="math-help-modal" class="modal">
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <h3>数学公式编辑器使用说明</h3>
+                    <h4>自动转化功能</h4>
+                    <ul>
+                        <li><strong>无穷大：</strong> infty → \infty</li>
+                        <li><strong>极限：</strong> lim → \lim</li>
+                        <li><strong>极限趋近：</strong> lim x->x0 → \lim_{x \to x0}</li>
+                        <li><strong>推出箭头：</strong> -> → \rightarrow</li>
+                        <li><strong>三角函数：</strong> sin, cos, tan, cot, sec, csc → \sin, \cos, \tan 等</li>
+                        <li><strong>反三角函数：</strong> arcsin, arccos, arctan 等 → \arcsin, \arccos, \arctan 等</li>
+                        <li><strong>对数函数：</strong> log, ln → \log, \ln</li>
+                        <li><strong>函数调用：</strong> sin x → \sin(x)</li>
+                        <li><strong>带底对数：</strong> log_a(x) → \log_{a}(x)</li>
+                        <li><strong>对数表示：</strong> log(a,b) → \log_{a}(b)</li>
+                        <li><strong>幂运算：</strong> a^b → a^{b}</li>
+                        <li><strong>分数：</strong> 1/2 → \frac{1}{2}</li>
+                        <li><strong>下标：</strong> a_b → a_{b}</li>
+                        <li><strong>平方根：</strong> sqrt(a) → \sqrt{a}</li>
+                        <li><strong>积分：</strong> int(a,b) → \int_{a}^{b}</li>
+                        <li><strong>求和：</strong> sum(a,b) → \sum_{a}^{b}</li>
+                    </ul>
+                    <h4>使用提示</h4>
+                    <ul>
+                        <li>使用小键盘按钮可以快速插入常用符号</li>
+                        <li>输入公式时会实时在预览区显示渲染结果</li>
+                        <li>可以直接输入LaTeX命令进行更复杂的公式编辑</li>
+                    </ul>
+                </div>
+            </div>
+            
+            <style>
+                /* 帮助按钮样式 */
+                .help-button {
+                    margin: 10px 0;
+                    padding: 8px 16px;
+                    background-color: #4CAF50;
+                    color: white;
+                    border: none;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-size: 14px;
+                    transition: background-color 0.3s;
+                }
+                
+                .help-button:hover {
+                    background-color: #45a049;
+                }
+                
+                /* 弹窗样式 */
+                .modal {
+                    display: none;
+                    position: fixed;
+                    z-index: 10000;
+                    left: 0;
+                    top: 0;
+                    width: 100%;
+                    height: 100%;
+                    overflow: auto;
+                    background-color: rgb(0,0,0);
+                    background-color: rgba(0,0,0,0.4);
+                }
+                
+                .modal-content {
+                    background-color: #fefefe;
+                    margin: 5% auto;
+                    padding: 20px;
+                    border: 1px solid #888;
+                    width: 80%;
+                    max-width: 600px;
+                    border-radius: 8px;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+                    font-family: Arial, sans-serif;
+                    line-height: 1.6;
+                }
+                
+                .close {
+                    color: #aaa;
+                    float: right;
+                    font-size: 28px;
+                    font-weight: bold;
+                    cursor: pointer;
+                }
+                
+                .close:hover,
+                .close:focus {
+                    color: black;
+                    text-decoration: none;
+                    cursor: pointer;
+                }
+                
+                .modal-content h3 {
+                    color: #333;
+                    margin-top: 0;
+                    border-bottom: 2px solid #4CAF50;
+                    padding-bottom: 10px;
+                }
+                
+                .modal-content h4 {
+                    color: #555;
+                    margin-top: 20px;
+                }
+                
+                .modal-content ul {
+                    margin-left: 20px;
+                    margin-bottom: 20px;
+                }
+                
+                .modal-content li {
+                    margin-bottom: 8px;
+                }
+                
+                .modal-content strong {
+                    color: #4CAF50;
+                }
+            </style>
             <div class="math-editor-container">
                 <div class="editor-controls">
                     <button onclick="insertSymbol('\\frac{a}{b}')">分数</button>
@@ -4536,6 +4656,11 @@
                     <button onclick="insertSymbol('\\lor')">或∨</button>
                     <button onclick="insertSymbol('\\neg')">非¬</button>
                     <button onclick="insertSymbol('\\equiv')">等价≡</button>
+                    <button onclick="insertSymbol('\\mathbb{N}')">ℕ</button>
+                    <button onclick="insertSymbol('\\oplus')">⊕</button>
+                    <button onclick="insertSymbol('\\otimes')">⊗</button>
+                    <button onclick="insertSymbol('\\odot')">⊙</button>
+                    <button onclick="insertSymbol('\\boxplus')">⊞</button>
                 </div>
                 <div class="editor-main">
                     <div class="input-section">
@@ -9681,11 +9806,12 @@ window.addEventListener('resize', function() {
             // 只转换纯文本的infty，不转换已经是LaTeX格式的\infty
             output = output.replace(/(?<!\\)\binfty\b/g, '\\infty');
             
-            // 2. 转换lim为极限符号：lim -> \lim
-            output = output.replace(/\blim\b/g, '\\lim');
-            
-            // 3. 转换lim x->x0为极限趋近：lim x->x0 -> \lim_{x \to x0}
+            // 2. 先处理lim x->x0格式的极限表达式，避免双重处理
+            // 匹配'lim x->x0'或'lim x\to x0'格式
             output = output.replace(/\blim\s+([a-zA-Z0-9]+)(?:->|\\to)([a-zA-Z0-9]+|infty)\b/g, '\\lim_{$1 \\to $2}');
+            
+            // 3. 然后处理单独的lim：lim -> \lim（仅当未被上面的规则处理时）
+            output = output.replace(/(?<!\\lim)\blim\b/g, '\\lim');
             
             // 4. 转换->为推出箭头：-> -> \rightarrow（添加空格）
             // 仅在非LaTeX命令内部转换箭头
@@ -9702,14 +9828,14 @@ window.addEventListener('resize', function() {
                 return match;
             });
             
-            // 5. 先转换函数名：sin -> \sin, cos -> \cos等
+            // 5. 先转换函数名：sin -> \sin, cos -> \cos等，以及反三角函数
             // 这一步将函数名转换为LaTeX格式，但保持函数调用的结构
             // 确保不会转换已经是LaTeX格式的命令
-            output = output.replace(/(?<!\\)\b(sin|cos|tan|cot|sec|csc|log|ln)\b/g, '\\$1');
+            output = output.replace(/(?<!\\)\b(sin|cos|tan|cot|sec|csc|arcsin|arccos|arctan|arccot|arcsec|arccsc|log|ln)\b/g, '\\$1');
             
             // 6. 处理函数调用与变量的空格：sin x -> \sin(x)
             // 将函数名后紧跟的变量转换为带括号的参数形式
-            output = output.replace(/(\\sin|\\cos|\\tan|\\cot|\\sec|\\csc|\\log|\\ln|\\lim)\\s+([a-zA-Z0-9]+(?:\\([^)]+\\))?)/g, '$1($2)');
+            output = output.replace(/(\\sin|\\cos|\\tan|\\cot|\\sec|\\csc|\\arcsin|\\arccos|\\arctan|\\arccot|\\arcsec|\\arccsc|\\log|\\ln|\\lim)\\s+([a-zA-Z0-9]+(?:\\([^)]+\\))?)/g, '$1($2)');
             
             // 7. 处理带底数的对数函数：log_a(x) -> \log_{a}(x)
             output = output.replace(/(\\log)_([a-zA-Z0-9]+)\\(([^)]+)\\)/g, '\\log_{$2}($3)');
@@ -9875,6 +10001,31 @@ window.addEventListener('resize', function() {
             });
         }
         
+        // 数学编辑器使用说明弹窗控制
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取弹窗相关元素
+            const helpBtn = document.getElementById('math-help-btn');
+            const modal = document.getElementById('math-help-modal');
+            const closeBtn = modal.getElementsByClassName('close')[0];
+            
+            // 点击使用说明按钮，打开弹窗
+            helpBtn.addEventListener('click', function() {
+                modal.style.display = 'block';
+            });
+            
+            // 点击关闭按钮，关闭弹窗
+            closeBtn.addEventListener('click', function() {
+                modal.style.display = 'none';
+            });
+            
+            // 点击弹窗外部，关闭弹窗
+            window.addEventListener('click', function(event) {
+                if (event.target === modal) {
+                    modal.style.display = 'none';
+                }
+            });
+        });
+        
         // 插入行列式
         function insertDeterminant() {
             // 创建输入对话框
@@ -10009,5 +10160,4 @@ window.addEventListener('resize', function() {
         document.head.appendChild(html2canvasScript);
     </script>
 </body>
-
 </html>
