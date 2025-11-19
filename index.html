@@ -4279,6 +4279,11 @@
         border-color: rgba(255, 255, 255, 0.2);
     }
     
+    /* ===== 数学编辑器海洋蓝主题样式 ===== */
+    body.blue-theme #math-preview {
+        color: #0f1423; /* 使用白色文字提高对比度 */
+    }
+    
     body.dark-theme #latex-output {
         background-color: rgba(15, 20, 30, 0.6);
         color: rgba(255, 255, 255, 0.9);
@@ -4661,6 +4666,8 @@
                     <button onclick="insertSymbol('\\otimes')">⊗</button>
                     <button onclick="insertSymbol('\\odot')">⊙</button>
                     <button onclick="insertSymbol('\\boxplus')">⊞</button>
+                    <button onclick="insertSymbol('\\infty')">∞</button>
+                    <button onclick="insertSymbol('\\newline')">换行</button>
                 </div>
                 <div class="editor-main">
                     <div class="input-section">
@@ -4673,7 +4680,7 @@
                     </div>
                 </div>
                 <div class="output-section">
-                        <h3>LaTeX 代码 (可直接编辑)</h3>
+                        <h3>LaTeX 代码 (可直接用LaTex编辑)</h3>
                         <textarea id="latex-output"></textarea>
                     <div class="output-controls">
                         <button onclick="copyLatex()">复制 LaTeX</button>
@@ -4689,7 +4696,7 @@
         <div class="content-container" id="home-page">
             <div class="avatar-section">
                 <div class="avatar-container">
-                    <img src="images/avatar.jpg" alt="头像图片" class="avatar-image" 
+                    <img src="images/avatar.jpg" alt="图片" class="avatar-image" 
                          onerror="this.style.display='none'; document.getElementById('avatar-placeholder').style.display='flex';">
                     <div class="avatar-placeholder" id="avatar-placeholder" style="display: none;">
                         欸，我图片去哪了(┬┬﹏┬┬)<br>
