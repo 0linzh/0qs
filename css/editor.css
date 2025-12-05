@@ -1,0 +1,218 @@
+#ocean-background {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.5s ease;
+}
+body.blue-theme #ocean-background {
+    opacity: 1;
+}
+/* 确保蓝色主题下其他背景不显示 */
+body.blue-theme::before,
+body.blue-theme::after {
+    display: none;
+}
+/* 编辑器切换开关样式 */
+.editor-switch {
+    display: flex;
+    align-items: center;
+    margin-top: 10px;
+}
+
+/* 开关样式 */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 60px;
+    height: 34px;
+    margin-right: 10px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: #ccc;
+    transition: .4s;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 26px;
+    width: 26px;
+    left: 4px;
+    bottom: 4px;
+    background-color: white;
+    transition: .4s;
+}
+
+input:checked + .slider {
+    background-color: #2196F3;
+}
+
+input:focus + .slider {
+    box-shadow: 0 0 1px #2196F3;
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+/* 圆形滑块 */
+.slider.round {
+    border-radius: 34px;
+}
+
+.slider.round:before {
+    border-radius: 50%;
+}
+
+/* 编辑器模式样式 */
+.editor-mode {
+    width: 100%;
+}
+
+/* kityformula编辑器容器样式 */
+#kfEditorContainer {
+    width: 100%;
+    min-height: 300px;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    padding: 10px;
+    background-color: white;
+    position: relative;
+    z-index: 9999 !important;
+}
+
+/* 覆盖kityformula编辑器默认样式，防止它占据整个页面 */
+.kf-editor {
+    position: relative !important;
+    width: 100% !important;
+    height: auto !important;
+    top: auto !important;
+    left: auto !important;
+    z-index: 9999 !important;
+}
+
+/* 调整工具栏样式 */
+.kf-editor-toolbar {
+    position: relative !important;
+    width: 100% !important;
+}
+
+/* 调整编辑区域样式 */
+.kf-editor-edit-area {
+    width: 100% !important;
+    height: 400px !important;
+    overflow: auto !important;
+}
+
+/* 确保编辑器容器在所有主题下都可见 */
+#kityformula-editor {
+    display: none;
+}
+
+#kityformula-editor.show {
+    display: block !important;
+}
+
+/* 确保编辑器内容区域在所有主题下都可见 */
+.kf-editor-content {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* 深色主题适配 */
+body.dark-theme #kfEditorContainer,
+body.ocean-blue #kfEditorContainer {
+    background-color: #1e293b;
+    border-color: #475569;
+}
+
+/* 飘雪主题适配 */
+body.snow-theme #kfEditorContainer {
+    background-color: rgba(255, 255, 255, 0.9);
+    border-color: #bbdefb;
+}
+
+/* 深邃黑主题下工具栏样式 */
+body.dark-theme .kf-editor-toolbar {
+    background-color: #1e293b !important;
+    border-color: #475569 !important;
+}
+
+body.dark-theme .kf-editor-ui-box {
+    background-color: #1e293b !important;
+    border-color: #475569 !important;
+}
+
+body.dark-theme .kf-editor-ui-box-group-title {
+    color: #e8f4f8 !important;
+}
+
+body.dark-theme .kf-editor-ui-box-item {
+    background-color: #1e293b !important;
+    border-color: #475569 !important;
+}
+
+body.dark-theme .kf-editor-ui-box-item:hover {
+    background-color: #334155 !important;
+}
+
+body.dark-theme .kf-editor-ui-button {
+    background-color: #1e293b !important;
+    border-color: #475569 !important;
+}
+
+body.dark-theme .kf-editor-ui-button-label {
+    color: #e8f4f8 !important;
+}
+
+body.dark-theme .kf-editor-ui-list {
+    background-color: #1e293b !important;
+    border-color: #475569 !important;
+}
+
+body.dark-theme .kf-editor-ui-list-item {
+    color: #e8f4f8 !important;
+}
+
+body.dark-theme .kf-editor-ui-list-item:hover {
+    background-color: #334155 !important;
+}
+
+/* 深邃黑主题下所有编辑器相关div样式 */
+body.dark-theme .kf-editor-ui-box-container,
+body.dark-theme .kf-editor-ui-box-group,
+body.dark-theme .kf-editor-ui-box-group-item-container,
+body.dark-theme .kf-editor-ui-area,
+body.dark-theme .kf-editor-ui-area-container,
+body.dark-theme .kf-editor-ui-area-item,
+body.dark-theme .kf-editor-ui-overlap-container,
+body.dark-theme .kf-editor-ui-overlap-button,
+body.dark-theme .kf-editor-ui-list-bg,
+body.dark-theme .kf-editor-ui-list-item-container {
+    background-color: #1e293b !important;
+    border-color: #475569 !important;
+    color: #e8f4f8 !important;
+}
+
+/* 深邃黑主题下编辑器文字颜色 */
+body.dark-theme .kf-editor-ui-area-button {
+    color: #e8f4f8 !important;
+}

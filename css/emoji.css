@@ -1,0 +1,80 @@
+/* ===== 动态表情包样式 ===== */
+.emoji-container {
+    position: fixed;
+    top: 80px;
+    right: 200px;
+    z-index: 1000;
+    background: transparent;
+    border-radius: 50%;
+    padding: 0;
+    box-shadow: none;
+    transition: all 0.3s ease;
+    width: 100px;
+    height: 100px;
+    cursor: grab;
+}
+
+.emoji-container:active {
+    cursor: grabbing;
+}
+
+.emoji-container.dragging #status-emoji {
+    content: url('../images/被拎起.png');
+}
+
+#status-emoji {
+    width: 160%;
+    height: 160%;
+    object-fit: cover;
+    border-radius: 50%;
+    transition: all 0.3s ease;
+    animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+    0%, 100% {
+        transform: translateY(0);
+    }
+    50% {
+        transform: translateY(-15px);
+    }
+}
+
+/* 表情切换按钮样式 */
+.emoji-controls {
+    position: absolute;
+    bottom: -70px;
+    left: 65%;
+    transform: translateX(-46%);
+    display: flex;
+    gap: 5px;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 5px;
+    border-radius: 20px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    pointer-events: none;
+}
+
+.emoji-container:hover .emoji-controls {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.emoji-btn {
+    width: 30px;
+    height: 30px;
+    border: none;
+    border-radius: 50%;
+    background: white;
+    font-size: 16px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.emoji-btn:hover {
+    transform: scale(1.2);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
+}
