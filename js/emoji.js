@@ -6,11 +6,157 @@ let emojiState = 'default';
 let emojiUpdateInterval = null;
 let autoRestoreTimer = null;
 let missedStateStartTime = null;
+let isLocked = false; // 锁定状态，true表示锁定，不进行随机移动
+let speechBubbleInterval = null; // 对话气泡定时器
 const AUTO_RESTORE_TIME = 5000; // 5秒后自动恢复
 const MISSED_STATE_DURATION = 3 * 60 * 1000; // 3分钟失落状态持续时间
 
+// 对话内容配置 - 林遥月的对话
+const speechContents = {
+    default: [
+        '告诉你个秘密哦,不要告诉别人哦~',
+        '我真的超级喜欢你~(*//▽//*)',
+        '今天也要加油哦~(●\'◡\'●)',
+        '你好呀~我是林遥月~(=・ω・=)',
+        '天气真好呢~(*^▽^*)',
+        '要保持好心情哦(๑•̀ㅂ•́)و✧',
+        '有什么我能帮你的吗？╰(*°▽°*)╯' 
+    ],
+    thinking: [
+        '让我想想...(´･ω･`)',
+        '这个问题有点难呢~(・∀・)',
+        '容我思考一下~(=・ω・=)',
+        '嗯...(｀・ω・´)',
+        '我得好好想想~(｡･ω･｡)' 
+    ],
+    concerned: [
+        '你看起来有点紧张~(=・ω・=)',
+        '没关系，慢慢来~(´･ω･`)',
+        '深呼吸，放松一下~(◡ ω ◡)',
+        '别担心，一切都会好的~(๑´ㅂ`๑)',
+        '需要休息一下吗？(=^･^=)' 
+    ],
+    urgent: [
+        '时间有点紧张了哦~(ﾉﾟ▽ﾟ)ﾉ',
+        '快一点，不然来不及啦~(゜ロ゜)',
+        '加油，马上就完成了~(๑•̀ㅂ•́)و✧',
+        '时间不等人哦~(・∀・)',
+        '要加快速度啦~(ﾟДﾟ≡ﾟдﾟ)!?' 
+    ],
+    'very-urgent': [
+        '哎呀，快没时间了！(゜ロ゜)',
+        '紧急情况！快行动！(ﾟДﾟ≡ﾟдﾟ)!?',
+        '快快快！(ﾉﾟ▽ﾟ)ﾉ',
+        '要来不及了！( ´△｀)',
+        '情况紧急！(｀Д´*)' 
+    ],
+    'extremely-urgent': [
+        '太过分了！(╬◣д◢)',
+        '我真的生气了！(｀Д´*)',
+    ],
+    'little-anger': [
+        '还有任务没完成啦，我要生气喽~哼~(｀Д´*)',
+        '你又偷懒了！(｀Д´*)',
+        '再这样我真的要生气了！(｀Д´*)',
+        '别让我等太久哦~(｀Д´*)',
+        '要认真完成任务呀~(｀Д´*)' 
+    ],
+    doing: [
+        '正在努力中~( ´･･)ﾉ(._.`)',
+        '加油，马上就完成了~(๑•̀ㅂ•́)و✧',
+        '专注ing~(◕ω◕)',
+        '我在认真工作呢~(●\'◡\'●)',
+        '进度不错哦~(๑´ㅂ`๑)' 
+    ],
+    completed: [
+        '任务完成！(*^▽^*)',
+        '太棒了！你做到了！(ﾉ≧∀≦)ﾉ',
+        '恭喜完成！(๑´ㅂ`๑)',
+        '做得真好！(●\'◡\'●)',
+        '庆祝一下！(≧∇≦)ﾉ' 
+    ],
+    missed: [
+        '任务错过了...(；ω；)',
+        '有点小失落呢~(´･_･`)',
+        '没关系，下次加油~(๑•̀ㅂ•́)و✧',
+        '别难过，继续努力~(=^･^=)',
+        '失败是成功之母~(◡ ω ◡)' 
+    ]
+};
+
+// 添加对话气泡的CSS样式
+function addSpeechBubbleStyles() {
+    if (document.getElementById('emoji-speech-styles')) return; // 避免重复添加
+    
+    const style = document.createElement('style');
+    style.id = 'emoji-speech-styles';
+    style.textContent = `
+        .emoji-speech-bubble {
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: white;
+            border: 2px solid #333;
+            border-radius: 20px;
+            padding: 15px 20px;
+            font-size: 15px;
+            color: #333;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1001;
+            min-width: 120px;
+            max-width: 220px;
+            min-height: 50px;
+            max-height: 100px;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            pointer-events: none;
+        }
+        
+        .emoji-speech-bubble::after {
+            content: '';
+            position: absolute;
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 10px 10px 0;
+            border-style: solid;
+            border-color: white transparent transparent transparent;
+        }
+        
+        .emoji-speech-bubble::before {
+            content: '';
+            position: absolute;
+            bottom: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            border-width: 12px 12px 0;
+            border-style: solid;
+            border-color: #333 transparent transparent transparent;
+            z-index: -1;
+        }
+        
+        .emoji-container {
+            position: relative; /* 确保对话气泡定位正确 */
+        }
+        
+        .speech-content {
+            word-wrap: break-word;
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+        }
+    `;
+    
+    document.head.appendChild(style);
+}
+
 // 初始化表情包功能
 function initEmojiSystem() {
+    console.log('初始化表情包系统');
+    // 添加对话气泡样式
+    addSpeechBubbleStyles();
+    
     // 检查DOM中是否已存在表情包容器
     let emojiContainer = document.getElementById('emoji-container');
     
@@ -28,6 +174,13 @@ function initEmojiSystem() {
     
     // 初始化表情
     updateEmoji('default');
+    
+    // 直接在initEmojiSystem中启动随机游走，无需包装函数
+    console.log('直接在initEmojiSystem中启动随机游走');
+    startRandomWalk();
+    
+    // 启动对话气泡系统
+    startSpeechBubbleSystem();
 }
 
 // 创建表情包容器
@@ -60,7 +213,8 @@ function createEmojiContainer() {
         { emoji: 'little-anger', symbol: '😤' },
         { emoji: 'doing', symbol: '😎' },
         { emoji: 'completed', symbol: '🥳' },
-        { emoji: 'missed', symbol: '😫' }
+        { emoji: 'missed', symbol: '😫' },
+        { emoji: 'lock', symbol: '🔒' } // 添加锁定按钮
     ];
     
     // 创建表情按钮
@@ -69,8 +223,23 @@ function createEmojiContainer() {
         btn.className = 'emoji-btn';
         btn.dataset.emoji = btnConfig.emoji;
         btn.textContent = btnConfig.symbol;
+        // 为锁定按钮添加特殊处理
+        if (btnConfig.emoji === 'lock') {
+            btn.id = 'lock-btn';
+            btn.title = '锁定/解锁随机移动';
+            // 设置初始状态
+            btn.textContent = isLocked ? '🔒' : '🔓';
+        }
         controls.appendChild(btn);
     });
+    
+    // 添加对话气泡
+    const speechBubble = document.createElement('div');
+    speechBubble.className = 'emoji-speech-bubble';
+    speechBubble.id = 'emoji-speech-bubble';
+    speechBubble.style.display = 'none';
+    speechBubble.innerHTML = '<div class="speech-content"></div>';
+    container.appendChild(speechBubble);
     
     container.appendChild(controls);
     
@@ -170,6 +339,17 @@ function initEmojiButtons() {
     emojiBtns.forEach(btn => {
         btn.addEventListener('click', () => {
             const emojiType = btn.dataset.emoji;
+            
+            // 处理锁定按钮
+            if (emojiType === 'lock') {
+                // 切换锁定状态
+                isLocked = !isLocked;
+                // 更新按钮显示
+                btn.textContent = isLocked ? '🔒' : '🔓';
+                // 显示锁定状态提示
+                alert(isLocked ? '林遥月会乖乖呆在这的(●\'◡\'●)' : '林遥月不会走远的，会一直陪着你的 ( ´･･)ﾉ(._.`)');
+                return;
+            }
             
             // 手动切换表情
             updateEmoji(emojiType);
@@ -377,10 +557,258 @@ function updateEmojiByTaskStatus(taskStatus) {
 // DOM加载完成后初始化表情包功能
 document.addEventListener('DOMContentLoaded', initEmojiSystem);
 
+// 显示对话气泡
+function showSpeechBubble(content) {
+    const speechBubble = document.getElementById('emoji-speech-bubble');
+    if (!speechBubble) return;
+    
+    const contentElement = speechBubble.querySelector('.speech-content');
+    if (contentElement) {
+        contentElement.textContent = content;
+    }
+    
+    speechBubble.style.display = 'block';
+    
+    // 随机位置调整，增加自然感
+    const randomOffset = Math.random() * 20 - 10;
+    speechBubble.style.transform = `translate(calc(-50% + ${randomOffset}px), -40px)`;
+    
+    // 设置定时器，2秒后自动隐藏
+    setTimeout(() => {
+        hideSpeechBubble();
+    }, 2000);
+}
+
+// 隐藏对话气泡
+function hideSpeechBubble() {
+    const speechBubble = document.getElementById('emoji-speech-bubble');
+    if (speechBubble) {
+        speechBubble.style.display = 'none';
+    }
+}
+
+// 根据表情状态获取随机对话内容
+function getRandomSpeechContent(state) {
+    // 将状态转换为匹配speechContents的键名
+    const normalizedState = state.replace(/_/g, '-');
+    const contents = speechContents[normalizedState] || speechContents.default;
+    const randomIndex = Math.floor(Math.random() * contents.length);
+    return contents[randomIndex];
+}
+
+// 启动对话气泡系统
+function startSpeechBubbleSystem() {
+    // 每5-10秒随机显示一次对话气泡
+    speechBubbleInterval = setInterval(() => {
+        // 50%概率显示对话气泡
+        if (Math.random() > 0.5) {
+            // 获取当前表情状态
+            const content = getRandomSpeechContent(emojiState);
+            showSpeechBubble(content);
+        }
+    }, 5000 + Math.random() * 5000); // 5-10秒随机间隔
+}
+
+// 停止对话气泡系统
+function stopSpeechBubbleSystem() {
+    if (speechBubbleInterval) {
+        clearInterval(speechBubbleInterval);
+        speechBubbleInterval = null;
+    }
+    hideSpeechBubble();
+}
+
 // 窗口关闭时清理资源
 window.addEventListener('beforeunload', () => {
     stopEmojiUpdate();
+    stopRandomWalk();
+    stopSpeechBubbleSystem();
     if (autoRestoreTimer) {
         clearTimeout(autoRestoreTimer);
     }
 });
+
+// 随机行走相关变量
+let randomWalkInterval = null;
+let isWalking = false;
+
+// 暴露拖拽状态检查函数
+window.isEmojiDragging = () => {
+    return document.body.classList.contains('emoji-dragging');
+};
+
+// 暴露位置获取和设置函数
+window.getEmojiContainer = () => {
+    return document.getElementById('emoji-container');
+};
+
+window.getStatusEmoji = () => {
+    return document.getElementById('status-emoji');
+};
+
+window.getEmojiPosition = () => {
+    const container = window.getEmojiContainer();
+    if (!container) return { x: 1390, y: 40 };
+    
+    // 从transform属性中提取位置
+    const transform = container.style.transform;
+    const match = transform.match(/translate\((\d+)px, (\d+)px\)/);
+    if (match) {
+        return {
+            x: parseInt(match[1]),
+            y: parseInt(match[2])
+        };
+    }
+    return { x: 1390, y: 40 };
+};
+
+window.setEmojiPosition = (x, y) => {
+    const container = window.getEmojiContainer();
+    if (!container) return;
+    
+    // 设置新位置
+    container.style.transform = `translate(${x}px, ${y}px)`;
+};
+
+// 表情包行走动画
+function startEmojiWalkAnimation(direction, distance, duration) {
+    if (window.isEmojiDragging() || isLocked) return;
+    
+    const emojiContainer = window.getEmojiContainer();
+    const statusEmoji = window.getStatusEmoji();
+    if (!emojiContainer || !statusEmoji) return;
+    
+    isWalking = true;
+    const originalSrc = statusEmoji.src;
+    const frameCount = 6;
+    const frameDuration = duration / (frameCount * 2); // 往返动画
+    let currentFrame = 1;
+    let startTime = Date.now();
+    
+    // 设置初始位置
+    const startPosition = window.getEmojiPosition();
+    const endX = direction === 'left' ? startPosition.x - distance : startPosition.x + distance;
+    const endY = startPosition.y;
+    
+    // 边界检测，确保不走出屏幕
+    const maxScreenX = window.innerWidth - emojiContainer.offsetWidth;
+    const finalEndX = Math.max(0, Math.min(endX, maxScreenX));
+    const actualDistance = finalEndX - startPosition.x;
+    
+    // 先移除所有transform相关样式，避免冲突
+    statusEmoji.style.transform = 'none';
+    // 暂停浮动动画，避免冲突
+    statusEmoji.style.animationPlayState = 'paused';
+    
+    // 添加翻转动画，无论是向左还是向右
+    // 先设置初始翻转状态
+    emojiContainer.style.transition = 'transform 0.05s ease';
+    
+    if (direction === 'right') {
+        // 向右走：先正常，然后翻转
+        emojiContainer.style.transform = `translate(${startPosition.x}px, ${startPosition.y}px) scaleX(-1)`;
+        // 延迟一下再翻转，产生动画效果
+    } else {
+        // 向左走：先翻转，然后正常
+        emojiContainer.style.transform = `translate(${startPosition.x}px, ${startPosition.y}px) scaleX(-1)`;
+        // 延迟一下再恢复，产生动画效果
+        setTimeout(() => {
+            emojiContainer.style.transform = `translate(${startPosition.x}px, ${startPosition.y}px) scaleX(1)`;
+        }, 30);
+    }
+    
+    // 动画函数
+    function animateWalk() {
+        // 检查是否正在拖拽
+        if (window.isEmojiDragging() || !isWalking) {
+            // 停止动画，恢复原始状态
+            statusEmoji.src = originalSrc;
+            statusEmoji.style.transform = 'none';
+            statusEmoji.style.animationPlayState = 'running';
+            emojiContainer.style.transition = 'none';
+            emojiContainer.style.transform = `translate(${startPosition.x}px, ${startPosition.y}px)`;
+            isWalking = false;
+            return;
+        }
+        
+        const elapsed = Date.now() - startTime;
+        
+        // 更新位置
+        const progress = Math.min(elapsed / duration, 1);
+        let newX = startPosition.x + actualDistance * progress;
+        // 确保位置在屏幕范围内
+        const finalX = Math.max(0, Math.min(newX, maxScreenX));
+        
+        // 更新翻转动画后的位置
+        if (direction === 'right') {
+            emojiContainer.style.transform = `translate(${finalX}px, ${endY}px) scaleX(-1)`;
+        } else {
+            emojiContainer.style.transform = `translate(${finalX}px, ${endY}px) scaleX(1)`;
+        }
+        
+        // 更新帧
+        const frameProgress = Math.min(elapsed / frameDuration, frameCount * 2 - 1);
+        currentFrame = Math.floor(frameProgress) % frameCount + 1;
+        
+        // 加载当前帧
+        statusEmoji.src = `images/left${currentFrame}.png`;
+        
+        // 继续动画
+        if (progress < 1) {
+            requestAnimationFrame(animateWalk);
+        } else {
+            // 动画结束，恢复原始状态
+            statusEmoji.src = originalSrc;
+            statusEmoji.style.transform = 'none';
+            statusEmoji.style.animationPlayState = 'running';
+            emojiContainer.style.transition = 'none';
+            emojiContainer.style.transform = `translate(${finalX}px, ${endY}px)`;
+            isWalking = false;
+        }
+    }
+    
+    // 开始动画
+    requestAnimationFrame(animateWalk);
+}
+
+// 随机游走函数
+function startRandomWalk() {
+    // 每3分钟触发一次，概率50%
+    randomWalkInterval = setInterval(() => {
+        console.log('检查是否触发行走...');
+        // 检查是否锁定
+        if (isLocked) {
+            console.log('表情包已锁定，跳过随机行走');
+            return;
+        }
+        
+        // 检查是否正在拖拽或行走
+        if (window.isEmojiDragging() || isWalking) {
+            console.log('拖拽或行走中，跳过随机行走');
+            return;
+        }
+        
+        // 70%概率触发
+        if (Math.random() > 1) {
+            console.log('随机概率未触发行走');
+            return;
+        }
+        
+        console.log('触发随机行走');
+        // 随机方向
+        const direction = Math.random() > 0.5 ? 'left' : 'right';
+        
+        // 固定移动距离80px，持续时间1秒
+        startEmojiWalkAnimation(direction, 85, 1200);
+    }, 10 * 1000); // 10秒（测试用，方便查看效果）
+}
+
+// 停止随机游走
+function stopRandomWalk() {
+    if (randomWalkInterval) {
+        clearInterval(randomWalkInterval);
+        randomWalkInterval = null;
+    }
+    isWalking = false;
+}
+
